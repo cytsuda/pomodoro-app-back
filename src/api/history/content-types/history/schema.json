@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "histories",
+  "info": {
+    "singularName": "history",
+    "pluralName": "histories",
+    "displayName": "history",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "scopeDate": {
+      "type": "datetime"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "histories"
+    },
+    "pomos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pomo.pomo",
+      "mappedBy": "history"
+    }
+  }
+}

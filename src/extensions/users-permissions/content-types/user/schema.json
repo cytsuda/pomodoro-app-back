@@ -63,11 +63,26 @@
       "inversedBy": "users",
       "configurable": false
     },
-    "projects": {
+    "pomoConfig": {
+      "type": "json"
+    },
+    "goalsConfig": {
+      "type": "json"
+    },
+    "preferenceConfig": {
+      "type": "json"
+    },
+    "histories": {
       "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::project.project",
-      "inversedBy": "users"
+      "relation": "oneToMany",
+      "target": "api::history.history",
+      "mappedBy": "user"
+    },
+    "tasks": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::task.task",
+      "mappedBy": "user"
     }
   }
 }

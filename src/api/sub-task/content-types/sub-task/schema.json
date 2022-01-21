@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sub_tasks",
+  "info": {
+    "singularName": "sub-task",
+    "pluralName": "sub-tasks",
+    "displayName": "sub-task"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "complete": {
+      "type": "boolean"
+    },
+    "task": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::task.task",
+      "inversedBy": "sub_tasks"
+    }
+  }
+}

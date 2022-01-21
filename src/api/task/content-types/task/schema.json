@@ -4,7 +4,7 @@
   "info": {
     "singularName": "task",
     "pluralName": "tasks",
-    "displayName": "Task",
+    "displayName": "task",
     "description": ""
   },
   "options": {
@@ -12,41 +12,41 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "Title": {
-      "type": "string"
+    "title": {
+      "type": "string",
+      "required": true
     },
-    "Description": {
-      "type": "richtext"
+    "note": {
+      "type": "text"
     },
-    "project": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::project.project",
-      "inversedBy": "tasks"
+    "complete": {
+      "type": "boolean",
+      "default": false
     },
-    "tasks_children": {
+    "completeDate": {
+      "type": "datetime"
+    },
+    "remind": {
+      "type": "datetime"
+    },
+    "sub_tasks": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::task.task",
-      "mappedBy": "task_parent"
+      "target": "api::sub-task.sub-task",
+      "mappedBy": "task"
     },
-    "task_parent": {
+    "user": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::task.task",
-      "inversedBy": "tasks_children"
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "tasks"
     },
-    "Priority": {
-      "type": "enumeration",
-      "enum": [
-        "low",
-        "medium",
-        "high",
-        "critical"
-      ]
+    "expectPomo": {
+      "type": "integer",
+      "default": 0
     },
-    "Finished": {
-      "type": "boolean"
+    "workedPomo": {
+      "type": "integer"
     }
   }
 }

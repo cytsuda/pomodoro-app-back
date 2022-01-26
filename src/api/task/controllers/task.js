@@ -1,5 +1,5 @@
 "use strict";
-
+const { parseBody } = require("../../utils");
 /**
  *  task controller
  */
@@ -7,16 +7,6 @@
 const { createCoreController } = require("@strapi/strapi").factories;
 
 const _ = require("lodash");
-
-const parseBody = (ctx) => {
-  if (ctx.is("multipart")) {
-    return parseMultipartData(ctx);
-  }
-
-  const { data } = ctx.request.body || {};
-
-  return { data };
-};
 
 module.exports = createCoreController("api::task.task", ({ strapi }) => ({
   /**
@@ -48,7 +38,10 @@ module.exports = createCoreController("api::task.task", ({ strapi }) => ({
 
   async find(ctx) {
     const { query } = ctx;
+
+    const possibleFilters = query.filters;
     query.filters = {
+      ...possibleFilters,
       user: {
         id: {
           $eq: ctx.state.user.id,

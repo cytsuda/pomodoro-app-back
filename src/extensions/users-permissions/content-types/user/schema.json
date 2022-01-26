@@ -72,16 +72,16 @@
     "preferenceConfig": {
       "type": "json"
     },
-    "histories": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::history.history",
-      "mappedBy": "user"
-    },
     "tasks": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::task.task",
+      "mappedBy": "user"
+    },
+    "pomos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pomo.pomo",
       "mappedBy": "user"
     }
   }

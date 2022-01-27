@@ -20,14 +20,28 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
   async create(ctx) {
     const { query } = ctx.request;
     const { data, files } = parseBody(ctx);
-    // is data
-    const pomoConfig = ctx.state.user.pomoConfig;
-
+    // [ ] need to recovery the pomoconfig from the userConfigs
+    const findQuery = {
+      filters: {
+        user: {
+          id: {
+            $eq: ctx.state.user.id,
+          },
+        },
+      },
+    };
+    const foundUserConfig = await strapi
+      .service("api::user-config.user-config")
+      .find(findQuery);
     data.user = ctx.state.user.id;
+
+    const { pomoConfig } = foundUserConfig.results[0];
+
     if (!_.isObject(data)) {
       throw new ValidationError('Missing "data" payload in the request body');
     }
-    // TODO - add search and see if the pomo is running
+
+    // TODO - Cannot create another pomo if there is a pomo running, search for pomos (usersID) running
     if (data.type === "work") {
       data.end = moment(data.start)
         .add(pomoConfig.workDuration, "m")
@@ -36,7 +50,6 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
       data.status = "running";
     }
     const sanitizedInputData = await this.sanitizeInput(data, ctx);
-    console.log(sanitizedInputData);
 
     const entity = await strapi
       .service("api::pomo.pomo")
@@ -54,23 +67,26 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
     if (!_.isObject(data)) {
       throw new ValidationError('Missing "data" payload in the request body');
     }
-
     const pomo = await await strapi.service("api::pomo.pomo").findOne(id, {});
-    console.log(pomo);
-    if (moment(moment().utc().format()).isBefore(pomo.end)) {
-      console.log("Pomo vai ser cancelado");
-      data.status = "canceled";
-    } else {
-      console.log("Pomo foi finalizado");
-      data.status = "completed";
+
+    if (data.finish) {
+      if (moment(moment().utc().format()).isBefore(pomo.end)) {
+        // Pomo is canceled
+        data.status = "canceled";
+      } else {
+        // Pomo is completed
+        data.status = "completed";
+      }
+    }
+    if (data.reset) {
+      //Reset to running status"
+      data.status = "running";
     }
     // `finish` is the flag to "complete" or "cancel"
     // `pauseTime` is the flag to "pause", "pauseTime" can't be with "finish" an
     // erro should be trigger, if client force pauseTime and finish the server will cancel
     // current pomo
-    console.log(data);
     const sanitizedInputData = await this.sanitizeInput(data, ctx);
-    console.log(sanitizedInputData);
 
     const entity = await strapi
       .service("api::pomo.pomo")

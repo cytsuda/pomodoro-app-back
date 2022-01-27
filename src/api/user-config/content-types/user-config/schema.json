@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_configs",
+  "info": {
+    "singularName": "user-config",
+    "pluralName": "user-configs",
+    "displayName": "userConfig",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "pomoConfig": {
+      "type": "json"
+    },
+    "goalsConfig": {
+      "type": "json"
+    },
+    "preferenceConfig": {
+      "type": "json"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "user_config"
+    }
+  }
+}

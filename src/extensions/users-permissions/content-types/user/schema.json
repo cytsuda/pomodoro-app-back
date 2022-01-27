@@ -63,15 +63,6 @@
       "inversedBy": "users",
       "configurable": false
     },
-    "pomoConfig": {
-      "type": "json"
-    },
-    "goalsConfig": {
-      "type": "json"
-    },
-    "preferenceConfig": {
-      "type": "json"
-    },
     "tasks": {
       "type": "relation",
       "relation": "oneToMany",
@@ -83,6 +74,12 @@
       "relation": "oneToMany",
       "target": "api::pomo.pomo",
       "mappedBy": "user"
+    },
+    "user_config": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::user-config.user-config",
+      "inversedBy": "user"
     }
   }
 }

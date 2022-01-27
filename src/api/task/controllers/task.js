@@ -38,7 +38,6 @@ module.exports = createCoreController("api::task.task", ({ strapi }) => ({
 
   async find(ctx) {
     const { query } = ctx;
-
     const possibleFilters = query.filters;
     query.filters = {
       ...possibleFilters,

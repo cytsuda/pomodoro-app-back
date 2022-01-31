@@ -30,7 +30,8 @@
         "completed",
         "canceled",
         "pause"
-      ]
+      ],
+      "required": true
     },
     "remain": {
       "type": "integer",

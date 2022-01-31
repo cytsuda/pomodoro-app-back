@@ -49,6 +49,20 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
         .format();
       data.status = "running";
     }
+    if (data.type === "short_break") {
+      data.end = moment(data.start)
+        .add(pomoConfig.shortBreak, "m")
+        .utc()
+        .format();
+      data.status = "running";
+    }
+    if (data.type === "long_break") {
+      data.end = moment(data.start)
+        .add(pomoConfig.longBreak, "m")
+        .utc()
+        .format();
+      data.status = "running";
+    }
     const sanitizedInputData = await this.sanitizeInput(data, ctx);
 
     const entity = await strapi

@@ -27,9 +27,10 @@ module.exports = createCoreController(
       if (props.results > 1) {
         throw Error("FUCK WHATS GOING ON");
       }
+
       // Create pomo config if don't exist
-      console.log(props.results);
-      if (props.results.length === 0 || !props.results.pomoConfig) {
+      if (props.results.length === 0) {
+        console.log("[CREATE USER CONFIG]");
         const data = {
           pomoConfig: {
             longBreakDuration: 15,
@@ -44,6 +45,25 @@ module.exports = createCoreController(
           .service("api::user-config.user-config")
           .create({ data: sanitizedInputData });
         const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
+        return this.transformResponse(sanitizedEntity);
+      } 
+      if (!props.results[0].pomoConfig) {
+        console.log("[UPDATE USER CONFIG]");
+        const id = ctx.state.user.id;
+        const data = {
+          pomoConfig: {
+            longBreakDuration: 15,
+            shortBreakDuration: 5,
+            workDuration: 25,
+            pomoBeforeLongBreak: 4,
+          },
+        };
+        const sanitizedInputData = await this.sanitizeInput(data, ctx);
+        const entity = await strapi
+          .service("api::user-config.user-config")
+          .update(id, { ...query, data: sanitizedInputData, files });
+        const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
+
         return this.transformResponse(sanitizedEntity);
       }
       const res = props.results.length <= 0 ? {} : props.results[0];

@@ -31,41 +31,66 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
         },
       },
     };
-    const foundUserConfig = await strapi
+    const userConfig = await strapi
       .service("api::user-config.user-config")
       .find(findQuery);
-    data.user = ctx.state.user.id;
 
-    const { pomoConfig } = foundUserConfig.results[0];
-
-    if (!_.isObject(data)) {
-      throw new ValidationError('Missing "data" payload in the request body');
+    if (userConfig.results.length !== 1 || !ctx.state.user.id) {
+      return ctx.badRequest("User config not found");
     }
 
-    // TODO - Cannot create another pomo if there is a pomo running, search for pomos (usersID) running
+    if (!_.isObject(data)) {
+      return ctx.badRequest('Missing "data" payload in the request body');
+    }
+
+    const findrunning = {
+      filters: {
+        status: "running",
+        user: {
+          id: {
+            $eq: ctx.state.user.id,
+          },
+        },
+      },
+    };
+
+    const { results: pomos } = await strapi
+      .service("api::pomo.pomo")
+      .find(findrunning);
+
+    if (pomos.length > 0) {
+      return ctx.badRequest("There is already a snitch running ");
+    }
+
+    data.user = ctx.state.user.id;
+    const { pomoConfig } = userConfig.results[0];
+    console.log("\n\npomoConfig");
+    console.log(pomoConfig);
+    console.log("pomoConfig\n\n");
+    let end;
     if (data.type === "work") {
-      data.end = moment(data.start)
+      end = moment(data.start)
         .add(pomoConfig.workDuration, timeType)
         .utc()
         .format();
       data.status = "running";
-    }
-    if (data.type === "short_break") {
-      data.end = moment(data.start)
-        .add(pomoConfig.shortBreak, timeType)
+    } else if (data.type === "short_break") {
+      end = moment(data.start)
+        .add(pomoConfig.shortBreakDuration, timeType)
+        .utc()
+        .format();
+      data.status = "running";
+    } else if (data.type === "long_break") {
+      end = moment(data.start)
+        .add(pomoConfig.longBreakDuration, timeType)
         .utc()
         .format();
       data.status = "running";
     }
-    if (data.type === "long_break") {
-      data.end = moment(data.start)
-        .add(pomoConfig.longBreak, timeType)
-        .utc()
-        .format();
-      data.status = "running";
+    if (!_.isEqual(end, data.end)) {
+      return ctx.badRequest("Something is wrong: end date is not valid");
     }
     const sanitizedInputData = await this.sanitizeInput(data, ctx);
-
     const entity = await strapi
       .service("api::pomo.pomo")
       .create({ ...query, data: sanitizedInputData, files });
@@ -73,7 +98,8 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
 
     return this.transformResponse(sanitizedEntity);
   },
-  
+
+  // Update - Here
   async update(ctx) {
     const { id } = ctx.params;
     const { query } = ctx.request;
@@ -121,6 +147,9 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
           $eq: ctx.state.user.id,
         },
       },
+    };
+    query.pagination = {
+      pageSize: 100,
     };
     const props = await strapi.service("api::pomo.pomo").find(query);
     const { results, pagination } = props;

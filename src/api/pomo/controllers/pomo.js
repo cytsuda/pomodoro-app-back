@@ -9,6 +9,7 @@ const _ = require("lodash");
 
 const { createCoreController } = require("@strapi/strapi").factories;
 
+const timeType = "s";
 module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
   /**
    * Create a record.
@@ -44,21 +45,21 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
     // TODO - Cannot create another pomo if there is a pomo running, search for pomos (usersID) running
     if (data.type === "work") {
       data.end = moment(data.start)
-        .add(pomoConfig.workDuration, "m")
+        .add(pomoConfig.workDuration, timeType)
         .utc()
         .format();
       data.status = "running";
     }
     if (data.type === "short_break") {
       data.end = moment(data.start)
-        .add(pomoConfig.shortBreak, "m")
+        .add(pomoConfig.shortBreak, timeType)
         .utc()
         .format();
       data.status = "running";
     }
     if (data.type === "long_break") {
       data.end = moment(data.start)
-        .add(pomoConfig.longBreak, "m")
+        .add(pomoConfig.longBreak, timeType)
         .utc()
         .format();
       data.status = "running";
@@ -72,7 +73,7 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
 
     return this.transformResponse(sanitizedEntity);
   },
-
+  
   async update(ctx) {
     const { id } = ctx.params;
     const { query } = ctx.request;

@@ -20,13 +20,11 @@ module.exports = createCoreController("api::task.task", ({ strapi }) => ({
     const { query } = ctx.request;
     const { data, files } = parseBody(ctx);
     data.user = ctx.state.user.id;
-    console.log(data);
     if (!_.isObject(data)) {
       throw new ValidationError('Missing "data" payload in the request body');
     }
 
     const sanitizedInputData = await this.sanitizeInput(data, ctx);
-    console.log(sanitizedInputData);
 
     const entity = await strapi
       .service("api::task.task")

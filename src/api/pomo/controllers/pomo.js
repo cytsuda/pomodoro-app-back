@@ -9,7 +9,7 @@ const _ = require("lodash");
 
 const { createCoreController } = require("@strapi/strapi").factories;
 
-const timeType = "s";
+const durationLength = "s";
 module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
   /**
    * Create a record.
@@ -21,7 +21,6 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
   async create(ctx) {
     const { query } = ctx.request;
     const { data, files } = parseBody(ctx);
-    // [ ] need to recovery the pomoconfig from the userConfigs
     const findQuery = {
       filters: {
         user: {
@@ -64,25 +63,23 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
 
     data.user = ctx.state.user.id;
     const { pomoConfig } = userConfig.results[0];
-    console.log("\n\npomoConfig");
-    console.log(pomoConfig);
-    console.log("pomoConfig\n\n");
+
     let end;
     if (data.type === "work") {
       end = moment(data.start)
-        .add(pomoConfig.workDuration, timeType)
+        .add(pomoConfig.workDuration, durationLength)
         .utc()
         .format();
       data.status = "running";
     } else if (data.type === "short_break") {
       end = moment(data.start)
-        .add(pomoConfig.shortBreakDuration, timeType)
+        .add(pomoConfig.shortBreakDuration, durationLength)
         .utc()
         .format();
       data.status = "running";
     } else if (data.type === "long_break") {
       end = moment(data.start)
-        .add(pomoConfig.longBreakDuration, timeType)
+        .add(pomoConfig.longBreakDuration, durationLength)
         .utc()
         .format();
       data.status = "running";
@@ -108,7 +105,7 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
     if (!_.isObject(data)) {
       throw new ValidationError('Missing "data" payload in the request body');
     }
-    const pomo = await await strapi.service("api::pomo.pomo").findOne(id, {});
+    const pomo = await strapi.service("api::pomo.pomo").findOne(id, {});
 
     if (data.finish) {
       if (moment(moment().utc().format()).isBefore(pomo.end)) {
@@ -117,12 +114,58 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
       } else {
         // Pomo is completed
         data.status = "completed";
+        if (pomo.type === "work" && data.tasks.length > 0) {
+          data.tasks.map(async (task) => {
+            const { id: taskID, attributes } = task;
+            if (attributes.complete === true) {
+              try {
+                const newAttributes = attributes;
+                newAttributes.completeDate = moment().utc().format();
+                if (attributes.sub_tasks.data.length <= 0) {
+                  newAttributes.sub_tasks = null;
+                }
+                const sanitizedInputTaskData = await this.sanitizeInput(
+                  newAttributes,
+                  ctx
+                );
+
+                const entityTask = await strapi
+                  .service("api::task.task")
+                  .update(taskID, { data: sanitizedInputTaskData });
+              } catch (err) {
+                console.log("[ERROR]");
+                console.log(err);
+              }
+            } else {
+              try {
+                const newAttributes = attributes;
+                newAttributes.completeDate = null;
+                newAttributes.intermediate = false;
+                if (attributes.sub_tasks.data.length <= 0) {
+                  newAttributes.sub_tasks = null;
+                }
+                const sanitizedInputTaskData = await this.sanitizeInput(
+                  newAttributes,
+                  ctx
+                );
+
+                const entityTask = await strapi
+                  .service("api::task.task")
+                  .update(taskID, { data: sanitizedInputTaskData });
+              } catch (err) {
+                console.log("[ERROR]");
+                console.log(err);
+              }
+            }
+          });
+        }
       }
     }
     if (data.reset) {
       //Reset to running status"
       data.status = "running";
     }
+    ctx.body = "Okey";
     // `finish` is the flag to "complete" or "cancel"
     // `pauseTime` is the flag to "pause", "pauseTime" can't be with "finish" an
     // erro should be trigger, if client force pauseTime and finish the server will cancel

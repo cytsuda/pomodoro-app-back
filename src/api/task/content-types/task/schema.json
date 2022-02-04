@@ -47,7 +47,12 @@
       "min": 0
     },
     "workedPomo": {
-      "type": "integer"
+      "type": "integer",
+      "min": 0
+    },
+    "intermediate": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

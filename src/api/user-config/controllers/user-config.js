@@ -38,6 +38,11 @@ module.exports = createCoreController(
             workDuration: 25,
             pomoBeforeLongBreak: 4,
           },
+          goalsConfig: {
+            daily: 8,
+            weekly: 40,
+            monthly: 160,
+          },
           user: ctx.state.user.id,
         };
         const sanitizedInputData = await this.sanitizeInput(data, ctx);
@@ -46,9 +51,9 @@ module.exports = createCoreController(
           .create({ data: sanitizedInputData });
         const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
         return this.transformResponse(sanitizedEntity);
-      } 
+      }
+      // If pomoConfig is find but dont have pomoConfig
       if (!props.results[0].pomoConfig) {
-        console.log("[UPDATE USER CONFIG]");
         const id = ctx.state.user.id;
         const data = {
           pomoConfig: {
@@ -58,6 +63,29 @@ module.exports = createCoreController(
             pomoBeforeLongBreak: 4,
           },
         };
+        // If pomoConfig is find but don't have goalsConfig
+        console.log("HERE?");
+        if (
+          !props.results[0].goalsConfig ||
+          !props.results[0].goalsConfig.daily
+        ) {
+          const id = ctx.state.user.id;
+          const data = {
+            goalsConfig: {
+              daily: 8,
+              weekly: 40,
+              monthly: 160,
+            },
+          };
+        }
+        // If pomoConfig is find but don't have preferenceConfig
+        // if (!props.results[0].preferenceConfig) {
+        //   const id = ctx.state.user.id;
+        //   const data = {
+        //     preferenceConfig: {},
+        //   };
+        // }
+        // sanitizedInputData
         const sanitizedInputData = await this.sanitizeInput(data, ctx);
         const entity = await strapi
           .service("api::user-config.user-config")

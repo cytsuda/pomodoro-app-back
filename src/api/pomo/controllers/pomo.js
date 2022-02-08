@@ -165,13 +165,11 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
       //Reset to running status"
       data.status = "running";
     }
-    ctx.body = "Okey";
     // `finish` is the flag to "complete" or "cancel"
     // `pauseTime` is the flag to "pause", "pauseTime" can't be with "finish" an
     // erro should be trigger, if client force pauseTime and finish the server will cancel
     // current pomo
     const sanitizedInputData = await this.sanitizeInput(data, ctx);
-
     const entity = await strapi
       .service("api::pomo.pomo")
       .update(id, { ...query, data: sanitizedInputData, files });

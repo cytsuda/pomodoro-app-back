@@ -120,7 +120,10 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
             if (attributes.complete === true) {
               try {
                 const newAttributes = attributes;
+                console.log(newAttributes);
                 newAttributes.completeDate = moment().utc().format();
+                newAttributes.workedPomo += 1;
+                console.log(newAttributes);
                 if (attributes.sub_tasks.data.length <= 0) {
                   newAttributes.sub_tasks = null;
                 }
@@ -141,6 +144,8 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
                 const newAttributes = attributes;
                 newAttributes.completeDate = null;
                 newAttributes.intermediate = false;
+                newAttributes.workedPomo += 1;
+                console.log(newAttributes);
                 if (attributes.sub_tasks.data.length <= 0) {
                   newAttributes.sub_tasks = null;
                 }
@@ -158,6 +163,8 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
               }
             }
           });
+        } else if (pomo.type !== "work") {
+          data.tasks = [];
         }
       }
     }

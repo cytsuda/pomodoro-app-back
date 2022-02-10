@@ -10,7 +10,6 @@ module.exports = createCoreController(
   "api::user-config.user-config",
   ({ strapi }) => ({
     async find(ctx) {
-      console.log("GET USER-CONFIG");
       const { query } = ctx;
       const possibleFilters = query.filters;
       query.filters = {
@@ -30,7 +29,6 @@ module.exports = createCoreController(
 
       // Create pomo config if don't exist
       if (props.results.length === 0) {
-        console.log("[CREATE USER CONFIG]");
         const data = {
           pomoConfig: {
             longBreakDuration: 15,
@@ -64,7 +62,6 @@ module.exports = createCoreController(
           },
         };
         // If pomoConfig is find but don't have goalsConfig
-        console.log("HERE?");
         if (
           !props.results[0].goalsConfig ||
           !props.results[0].goalsConfig.daily

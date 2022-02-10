@@ -9,7 +9,7 @@ const _ = require("lodash");
 
 const { createCoreController } = require("@strapi/strapi").factories;
 
-const durationLength = "s";
+const durationLength = process.env.NODE_ENV === "development" ? "s" : "m";
 module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
   /**
    * Create a record.
@@ -110,7 +110,53 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
     if (data.finish) {
       if (moment(moment().utc().format()).isBefore(pomo.end)) {
         // Pomo is canceled
-        data.status = "canceled";
+        data.status = pomo.type === "work" ? "canceled" : "completed";
+        data.end = moment().utc().format();
+        if (pomo.type === "work" && data.tasks.length > 0) {
+          data.tasks.map(async (task) => {
+            const { id: taskID, attributes } = task;
+            if (attributes.complete === true) {
+              try {
+                const newAttributes = attributes;
+                if (attributes.sub_tasks.data.length <= 0) {
+                  newAttributes.sub_tasks = null;
+                }
+                const sanitizedInputTaskData = await this.sanitizeInput(
+                  newAttributes,
+                  ctx
+                );
+
+                const entityTask = await strapi
+                  .service("api::task.task")
+                  .update(taskID, { data: sanitizedInputTaskData });
+              } catch (err) {
+                console.log("[ERROR]");
+                console.log(err);
+              }
+            } else {
+              try {
+                const newAttributes = attributes;
+                newAttributes.completeDate = null;
+                newAttributes.intermediate = false;
+                if (attributes.sub_tasks.data.length <= 0) {
+                  newAttributes.sub_tasks = null;
+                }
+                const sanitizedInputTaskData = await this.sanitizeInput(
+                  newAttributes,
+                  ctx
+                );
+
+                const entityTask = await strapi
+                  .service("api::task.task")
+                  .update(taskID, { data: sanitizedInputTaskData });
+              } catch (err) {
+                console.log("[ERROR]");
+                console.log(err);
+              }
+            }
+          });
+        }
+        data.tasks = [];
       } else {
         // Pomo is completed
         data.status = "completed";
@@ -120,10 +166,8 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
             if (attributes.complete === true) {
               try {
                 const newAttributes = attributes;
-                console.log(newAttributes);
                 newAttributes.completeDate = moment().utc().format();
                 newAttributes.workedPomo += 1;
-                console.log(newAttributes);
                 if (attributes.sub_tasks.data.length <= 0) {
                   newAttributes.sub_tasks = null;
                 }
@@ -145,7 +189,6 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
                 newAttributes.completeDate = null;
                 newAttributes.intermediate = false;
                 newAttributes.workedPomo += 1;
-                console.log(newAttributes);
                 if (attributes.sub_tasks.data.length <= 0) {
                   newAttributes.sub_tasks = null;
                 }

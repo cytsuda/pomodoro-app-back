@@ -239,9 +239,11 @@ module.exports = createCoreController("api::pomo.pomo", ({ strapi }) => ({
         },
       },
     };
-    query.pagination = {
-      pageSize: 100,
-    };
+    if (!query.pagination) {
+      query.pagination = {
+        pageSize: 100,
+      };
+    }
     const props = await strapi.service("api::pomo.pomo").find(query);
     const { results, pagination } = props;
     const sanitizedResults = await this.sanitizeOutput(results, ctx);

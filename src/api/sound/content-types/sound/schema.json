@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sounds",
+  "info": {
+    "singularName": "sound",
+    "pluralName": "sounds",
+    "displayName": "sound",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "alert": {
+      "type": "media",
+      "multiple": true,
+      "required": true,
+      "allowedTypes": [
+        "videos",
+        "files"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

@@ -1,5 +1,5 @@
 "use strict";
-
+const _ = require("lodash");
 /**
  *  user-config controller
  */
@@ -26,7 +26,6 @@ module.exports = createCoreController(
       if (props.results > 1) {
         throw Error("FUCK WHATS GOING ON");
       }
-
       // Create pomo config if don't exist
       if (props.results.length === 0) {
         const data = {
@@ -50,24 +49,24 @@ module.exports = createCoreController(
         const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
         return this.transformResponse(sanitizedEntity);
       }
+
       // If pomoConfig is find but dont have pomoConfig
-      if (!props.results[0].pomoConfig) {
-        const id = ctx.state.user.id;
-        const data = {
-          pomoConfig: {
-            longBreakDuration: 15,
-            shortBreakDuration: 5,
-            workDuration: 25,
-            pomoBeforeLongBreak: 4,
-          },
-        };
-        // If pomoConfig is find but don't have goalsConfig
-        if (
-          !props.results[0].goalsConfig ||
-          !props.results[0].goalsConfig.daily
-        ) {
-          const id = ctx.state.user.id;
-          const data = {
+      if (props.results.length > 0 && props.results.length <= 1) {
+        const userConfigId = props.results[0].id;
+        let newData = {};
+        if (!props.results[0].pomoConfig) {
+          newData = {
+            pomoConfig: {
+              longBreakDuration: 15,
+              shortBreakDuration: 5,
+              workDuration: 25,
+              pomoBeforeLongBreak: 4,
+            },
+          };
+        }
+        if (!props.results[0].goalsConfig) {
+          newData = {
+            ...newData,
             goalsConfig: {
               daily: 8,
               weekly: 40,
@@ -75,29 +74,45 @@ module.exports = createCoreController(
             },
           };
         }
-        // If pomoConfig is find but don't have preferenceConfig
-        // if (!props.results[0].preferenceConfig) {
-        //   const id = ctx.state.user.id;
-        //   const data = {
-        //     preferenceConfig: {},
-        //   };
-        // }
-        // sanitizedInputData
-        const sanitizedInputData = await this.sanitizeInput(data, ctx);
-        const entity = await strapi
-          .service("api::user-config.user-config")
-          .update(id, { ...query, data: sanitizedInputData, files });
-        const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
-
-        return this.transformResponse(sanitizedEntity);
+        if (!props.results[0].preferenceConfig) {
+          newData = {
+            ...newData,
+            preferenceConfig: {
+              sounds: {
+                work: {
+                  title: "hero decorative celebration 01",
+                  url: "/uploads/hero_decorative_celebration_01_b55282f205.wav",
+                },
+                short: {
+                  title: "hero decorative celebration 01",
+                  url: "/uploads/hero_decorative_celebration_01_b55282f205.wav",
+                },
+                long: {
+                  title: "hero decorative celebration 01",
+                  url: "/uploads/hero_decorative_celebration_01_b55282f205.wav",
+                },
+              },
+            },
+          };
+        }
+        if (!_.isEqual(newData, {})) {
+          const sanitizedInputData = await this.sanitizeInput(newData, ctx);
+          const entity = await strapi
+            .service("api::user-config.user-config")
+            .update(userConfigId, { data: sanitizedInputData });
+          const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
+          return this.transformResponse(sanitizedEntity);
+        } else {
+          const { results, pagination } = props;
+          const sanitizedResults = await this.sanitizeOutput(results, ctx);
+          return this.transformResponse(sanitizedResults, { pagination });
+        }
       }
-      const res = props.results.length <= 0 ? {} : props.results[0];
+
       // Normal version
-      // const { results, pagination } = props;
-      // const sanitizedResults = await this.sanitizeOutput(results, ctx);
-      // return this.transformResponse(sanitizedResults, { pagination });
-      const sanitizedResults = await this.sanitizeOutput(res, ctx);
-      return this.transformResponse(sanitizedResults);
+      const { results, pagination } = props;
+      const sanitizedResults = await this.sanitizeOutput(results, ctx);
+      return this.transformResponse(sanitizedResults, { pagination });
     },
   })
 );
